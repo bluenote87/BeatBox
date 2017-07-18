@@ -51,11 +51,11 @@ public class BeatBox {
         downTempo.addActionListener(new MyDownTempoListener());
         buttonBox.add(downTempo);
 		
-		JButton saveIt = new JButton("Save It");
+		JButton saveIt = new JButton("Save This Beat");
 		saveIt.addActionListener(new MySendListener());
 		buttonBox.add(saveIt);
 		
-		JButton restoreIt = new JButton("Restore It");
+		JButton restoreIt = new JButton("Restore A Beat");
 		restoreIt.addActionListener(new MyReadInListener());
 		buttonBox.add(restoreIt);
 
@@ -186,7 +186,28 @@ public class BeatBox {
 		
 		public void actionPerformed(ActionEvent a) {
 			
-			boolean[] checkboxState = new boolean[256]; //make a boolean array to hold the state of each "beat", i.e. check
+			JFileChooser fileSave = new JFileChooser();
+			fileSave.showSaveDialog(theFrame);
+			saveFile(fileSave.getSelectedFile());
+		} //close method
+	} //close inner class
+	
+	public class MyReadInListener implements ActionListener { //reads previously saved tracks
+		
+		public void actionPerformed(ActionEvent a) {
+			
+			JFileChooser readSave = new JFileChooser();
+			readSave.showSaveDialog(theFrame);
+			readFile(readSave.getSelectedFile());
+			
+			sequencer.stop();
+			buildTrackAndStart();
+		} //close method
+	} //close inner class
+	
+	private void saveFile(File saveTheBeat) {
+		
+		boolean[] checkboxState = new boolean[256]; //make a boolean array to hold the state of each "beat", i.e. check
 			
 			for (int i = 0; i < 256; i++) {
 				JCheckBox check = (JCheckBox) checkboxList.get(i); //goes through the checkboxList array, gets its state, and adds it to the boolean array
@@ -196,21 +217,19 @@ public class BeatBox {
 			}
 			
 			try {
-				FileOutputStream fileStream = new FileOutputStream(new File("Checkbox.ser"));
+				FileOutputStream fileStream = new FileOutputStream(saveTheBeat);
 				ObjectOutputStream os = new ObjectOutputStream(fileStream);
 				os.writeObject(checkboxState);
 			} catch(Exception ex) {
 				ex.printStackTrace();
-			}
-		} //close method
-	} //close inner class
+			} //end serialization
+	} //end method
 	
-	public class MyReadInListener implements ActionListener { //reads previously saved tracks
+	private void readFile(File restoreTheBeat) {
 		
-		public void actionPerformed(ActionEvent a) {
-			boolean[] checkboxState = null;
+		boolean[] checkboxState = null;
 			try {
-				FileInputStream fileIn = new FileInputStream(new File("Checkbox.ser"));
+				FileInputStream fileIn = new FileInputStream(restoreTheBeat);
 				ObjectInputStream is = new ObjectInputStream(fileIn);
 				checkboxState = (boolean[]) is.readObject(); //read the single object in the file and cast it back to a boolean array
 			} catch (Exception ex) { ex.printStackTrace(); }
@@ -223,10 +242,6 @@ public class BeatBox {
 					check.setSelected(false);
 				} //restores the state of each of the checks in the checkboxList array
 			}
-			
-			sequencer.stop();
-			buildTrackAndStart();
-		} //close method
-	} //close inner class
-
+		
+	}
 } //close class
